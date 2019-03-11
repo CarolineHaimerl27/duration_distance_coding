@@ -1,5 +1,5 @@
 function [ SIMc, C ] = cont_slop( SIM, N, Nseq, ws, opt_graph, mfreq )
-% make one continuous slope out of the sequence
+% concatenate to one continuous slope from theta-modulated sequences
 % assumes that cell indices is 1:N in the order in which they are presented
 d1=1; d2=N; SIMc = SIM;
     for i=1:length(SIM(:,2))-1

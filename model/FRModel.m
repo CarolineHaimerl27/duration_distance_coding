@@ -28,9 +28,7 @@ classdef FRModel < handle
     end
     
     methods
-        
-        % model using depression only
-        
+                
         function this = FRModel(inpc, tend, dt, Mscale, thetaon, freq, inpth, tbreak, modelspec)
             
             %%%%%%%%%% INPUTS CHECKS %%%%%%%%%%%%
@@ -101,22 +99,23 @@ classdef FRModel < handle
                 [t2,x]  = ode45(model,tend:dt:(tend+tbreak),[par'; X'; Uendb'; M(end, :)'], opts); % Runge Kutta integration
                 Mbreak  = x(:,length(par)+1+2*N:end);
                 Ubreak = x(:,length(par)+1+N:end-N);
-                Xbreak  = x(end,length(par)+1:length(par)+N);
+                Xbreak  = x(:,length(par)+1:length(par)+N);
                 this.Udyn = [this.Udyn; Ubreak];
+                this.Xdyn = [this.Xdyn; Xbreak];
                 % simulation after break
                 par([2,5])  = [inpc, I_theta];
-                [t3,x]  = ode45(model,(tend+tbreak):dt:(2*tend+tbreak),[par'; Xbreak'; Ubreak(end, :)'; Mbreak(end, :)'], opts); % Runge Kutta integration
+                [t3,x]  = ode45(model,(tend+tbreak):dt:(2*tend+tbreak),[par'; Xbreak(end, :)'; Ubreak(end, :)'; Mbreak(end, :)'], opts); % Runge Kutta integration
                 Mabreak = x(:,length(par)+1+2*N:end);
                 %                         % determine slope after break
                 %                         [ ~, Cs, ~, this.dirdet(ia, ifr,2) ] = SLOPE( Mabreak, t3, f_theta, I_theta, N, size(Mabreak,1)/2,0);
                 %                         this.C(ia, ifr, 2)=Cs(2);
                 this.M = [M; Mbreak; Mabreak]; this.t = [t1; t2; t3];
                 this.Udyn = [this.Udyn; x(:,length(par)+1+N:end-N)];
+                this.Xdyn = [this.Xdyn; x(:,length(par)+1:length(par)+N)];
             else
                 this.M = M; this.t = t1;
             end
             
-            % ANALYSIS
             % Average Run Sequence Slope
             % if there was a break - compute the slope before and after the break
             if tbreak == 0
@@ -129,7 +128,6 @@ classdef FRModel < handle
                 % N1 = 100;
             end
             this.slope(1)                  = RunSeqSlope(Mtmp, N, ttemp', thetaon, f_theta);
-            % previous slope computing method
             [ ~, Cs, ~, this.dirdet ]   = SLOPE( Mtmp, ttemp', f_theta, I_theta, N, size(Mtmp,1)/2,0);
             this.C(1)=Cs(2);
             % Theta slope
@@ -141,9 +139,8 @@ classdef FRModel < handle
                     Mtmp2 = M;
                     ttemp = 0:dt:range(t1);
                     this.slope(2)                  = RunSeqSlope(Mtmp2, N, ttemp', thetaon, f_theta);
-                    % previous slope computing method
                     [ ~, Cs]   = SLOPE( Mtmp2, ttemp', f_theta, I_theta, N, size(Mtmp2,1)/2,0);
-                    this.C(2)=Cs(2);
+                    this.C(2) = Cs(2);
                     % Theta slope
                     x= ThSlope(ttemp, f_theta, N, Mtmp2, dt);
                     this.medthslope(2)             = median(x, 'omitnan');

@@ -59,8 +59,8 @@ if max(b) > 3; % if there are more than 3 theta cycles
         MFRm = unwrap(mfrm/N*2*pi); %Unwrap due to circular topology (conversion in rad)
         % if mfrm does not span a sufficient part of the cell space - no
         % slope can be defined! unwrap only takes care of jumps>pi, but for
-        % us jumps that are <pi can also be problematic!
-        % let's set a boundary at jumps of 10% of 2pi
+        % jumps that are <pi can also be problematic!
+        % set a boundary at jumps of 10% of 2pi
         if median(abs(diff(MFRm)))>(2*pi*0.35)
             warning('jumps between max neuron in theta cycles larger than 20% of N --> no slope detected')
             slope = NaN;
